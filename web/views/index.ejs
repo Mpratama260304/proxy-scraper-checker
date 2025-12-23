@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="theme-color" content="#0d1117">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="format-detection" content="telephone=no">
+    <title>Proxy Scraper Checker</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                    </svg>
+                    <h1>Proxy Scraper Checker</h1>
+                </div>
+                <p class="subtitle">Free proxy list with real-time checking</p>
+            </div>
+        </header>
+
+        <!-- Stats Cards -->
+        <section class="stats-section">
+            <div class="stats-grid">
+                <div class="stat-card total">
+                    <div class="stat-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span id="statTotal" class="stat-value"><%= stats.total %></span>
+                        <span class="stat-label">Total Proxies</span>
+                    </div>
+                </div>
+                <div class="stat-card working">
+                    <div class="stat-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span id="statWorking" class="stat-value"><%= stats.working %></span>
+                        <span class="stat-label">Working</span>
+                    </div>
+                </div>
+                <div class="stat-card http">
+                    <div class="stat-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                            <line x1="8" y1="21" x2="16" y2="21"></line>
+                            <line x1="12" y1="17" x2="12" y2="21"></line>
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span id="statHttp" class="stat-value"><%= stats.http %></span>
+                        <span class="stat-label">HTTP/HTTPS</span>
+                    </div>
+                </div>
+                <div class="stat-card socks4">
+                    <div class="stat-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
+                            <rect x="9" y="9" width="6" height="6"></rect>
+                            <line x1="9" y1="1" x2="9" y2="4"></line>
+                            <line x1="15" y1="1" x2="15" y2="4"></line>
+                            <line x1="9" y1="20" x2="9" y2="23"></line>
+                            <line x1="15" y1="20" x2="15" y2="23"></line>
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span id="statSocks4" class="stat-value"><%= stats.socks4 %></span>
+                        <span class="stat-label">SOCKS4</span>
+                    </div>
+                </div>
+                <div class="stat-card socks5">
+                    <div class="stat-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                            <polyline points="2 17 12 22 22 17"></polyline>
+                            <polyline points="2 12 12 17 22 12"></polyline>
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span id="statSocks5" class="stat-value"><%= stats.socks5 %></span>
+                        <span class="stat-label">SOCKS5</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Actions Bar -->
+        <section class="actions-bar">
+            <div class="actions-left">
+                <% if (lastUpdated) { %>
+                    <span class="last-updated">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                        Last updated: <time id="lastUpdated" datetime="<%= lastUpdated %>"><%= new Date(lastUpdated).toLocaleString() %></time>
+                    </span>
+                <% } %>
+            </div>
+            <div class="actions-right">
+                <button id="refreshBtn" class="btn btn-secondary" onclick="runChecker()">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="23 4 23 10 17 10"></polyline>
+                        <polyline points="1 20 1 14 7 14"></polyline>
+                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                    </svg>
+                    <span>Run Checker</span>
+                </button>
+                <button id="noCacheBtn" class="btn btn-warning" onclick="runChecker(true)" title="Clear cached databases and download fresh copies">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"></path>
+                    </svg>
+                    <span>No Cache</span>
+                </button>
+                <div class="dropdown">
+                    <button class="btn btn-primary dropdown-toggle" id="downloadBtn">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        <span>Download</span>
+                        <svg class="chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </button>
+                    <div class="dropdown-menu" id="downloadMenu">
+                        <a href="/download?format=txt" class="dropdown-item">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                            </svg>
+                            All Proxies (TXT)
+                        </a>
+                        <a href="/download?format=json" class="dropdown-item">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                            </svg>
+                            All Proxies (JSON)
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a href="/download/http" class="dropdown-item">HTTP Only</a>
+                        <a href="/download/socks4" class="dropdown-item">SOCKS4 Only</a>
+                        <a href="/download/socks5" class="dropdown-item">SOCKS5 Only</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Error Alert -->
+        <% if (error) { %>
+            <div class="alert alert-error">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <span><%= error %></span>
+            </div>
+        <% } %>
+
+        <!-- Status Message -->
+        <div id="statusMessage" class="alert" style="display: none;"></div>
+
+        <!-- Real-time Log Section -->
+        <section class="log-section">
+            <div class="log-header">
+                <h2>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="4 17 10 11 4 5"></polyline>
+                        <line x1="12" y1="19" x2="20" y2="19"></line>
+                    </svg>
+                    Real-time Log
+                </h2>
+                <div class="log-actions">
+                    <span id="logStatus" class="log-status">
+                        <span class="status-dot"></span>
+                        <span class="status-text">Ready</span>
+                    </span>
+                    <button id="clearLogsBtn" class="btn btn-sm btn-secondary" onclick="clearLogs()">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                        Clear
+                    </button>
+                </div>
+            </div>
+            <div id="logContainer" class="log-container">
+                <div class="log-entry log-info">
+                    <span class="log-time">[--:--:--]</span>
+                    <span class="log-message">Click "Run Checker" to start and see real-time logs here...</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Proxy Table -->
+        <section class="table-section">
+            <div class="table-header">
+                <h2>Proxy Results</h2>
+                <button id="clearProxiesBtn" class="btn btn-sm btn-secondary" onclick="clearProxies()">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                    Clear Table
+                </button>
+            </div>
+            <% if (hasData && proxies.length > 0) { %>
+                <div class="table-scroll-hint" id="scrollHint">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                    <span>Scroll for more</span>
+                </div>
+                <div class="table-container" id="tableContainer">
+                    <table class="proxy-table" id="proxyTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Proxy</th>
+                                <th>Protocol</th>
+                                <th>Status</th>
+                                <th>Timeout</th>
+                                <th>Exit IP</th>
+                                <th>Country</th>
+                                <th>ASN</th>
+                            </tr>
+                        </thead>
+                        <tbody id="proxyTableBody">
+                            <% proxies.forEach((proxy, index) => { %>
+                                <tr>
+                                    <td class="row-num"><%= index + 1 %></td>
+                                    <td class="proxy-cell">
+                                        <code><%= proxy.proxy %></code>
+                                        <button class="copy-btn" onclick="copyToClipboard('<%= proxy.proxy %>')" title="Copy to clipboard">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                            </svg>
+                                        </button>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-<%= proxy.protocol.toLowerCase() %>"><%= proxy.protocol %></span>
+                                    </td>
+                                    <td>
+                                        <span class="status status-<%= proxy.status.toLowerCase() %>">
+                                            <% if (proxy.status === 'Working') { %>
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                                </svg>
+                                            <% } %>
+                                            <%= proxy.status %>
+                                        </span>
+                                    </td>
+                                    <td><%= proxy.timeout %></td>
+                                    <td><code class="exit-ip"><%= proxy.exitIp %></code></td>
+                                    <td><%= proxy.country %></td>
+                                    <td class="asn-cell" title="<%= proxy.asn %>"><%= proxy.asn %></td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            <% } else { %>
+                <div class="empty-state" id="emptyState">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+                    </svg>
+                    <h3>No Proxies Found</h3>
+                    <p>Click "Run Checker" to scrape and check proxies, or wait for the automated process to complete.</p>
+                    <button class="btn btn-primary" onclick="runChecker()">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                        </svg>
+                        Start Proxy Checker
+                    </button>
+                </div>
+            <% } %>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Powered by <a href="https://github.com/monosans/proxy-scraper-checker" target="_blank" rel="noopener">proxy-scraper-checker</a></p>
+        </footer>
+    </div>
+
+    <script>
+        // Global state
+        let eventSource = null;
+        let isRunning = false;
+
+        // Dropdown toggle
+        document.getElementById('downloadBtn').addEventListener('click', function(e) {
+            e.stopPropagation();
+            document.getElementById('downloadMenu').classList.toggle('show');
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function() {
+            document.getElementById('downloadMenu').classList.remove('show');
+        });
+
+        // Copy to clipboard
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(function() {
+                showStatus('Copied to clipboard!', 'success');
+            }).catch(function() {
+                showStatus('Failed to copy', 'error');
+            });
+        }
+
+        // Show status message
+        function showStatus(message, type) {
+            const statusEl = document.getElementById('statusMessage');
+            statusEl.textContent = message;
+            statusEl.className = 'alert alert-' + type;
+            statusEl.style.display = 'flex';
+            setTimeout(function() {
+                statusEl.style.display = 'none';
+            }, 5000);
+        }
+
+        // Update log status indicator
+        function updateLogStatus(status, text) {
+            const statusEl = document.getElementById('logStatus');
+            const dot = statusEl.querySelector('.status-dot');
+            const textEl = statusEl.querySelector('.status-text');
+            
+            dot.className = 'status-dot ' + status;
+            textEl.textContent = text;
+        }
+
+        // Get current timestamp
+        function getTimestamp() {
+            const now = new Date();
+            return now.toLocaleTimeString('en-US', { hour12: false });
+        }
+
+        // Add log entry
+        function addLogEntry(message, type = 'log') {
+            const logContainer = document.getElementById('logContainer');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry log-' + type;
+            
+            const time = document.createElement('span');
+            time.className = 'log-time';
+            time.textContent = '[' + getTimestamp() + ']';
+            
+            const msg = document.createElement('span');
+            msg.className = 'log-message';
+            msg.textContent = message;
+            
+            entry.appendChild(time);
+            entry.appendChild(msg);
+            logContainer.appendChild(entry);
+            
+            // Auto-scroll to bottom
+            logContainer.scrollTop = logContainer.scrollHeight;
+            
+            // Limit log entries to prevent memory issues
+            while (logContainer.children.length > 500) {
+                logContainer.removeChild(logContainer.firstChild);
+            }
+        }
+
+        // Clear logs
+        function clearLogs() {
+            const logContainer = document.getElementById('logContainer');
+            logContainer.innerHTML = '';
+            addLogEntry('Logs cleared', 'info');
+            updateLogStatus('', 'Ready');
+        }
+
+        // Clear proxy table
+        function clearProxies() {
+            const tableBody = document.getElementById('proxyTableBody');
+            if (tableBody) {
+                tableBody.innerHTML = '';
+            }
+            // Update stats to zero
+            document.querySelectorAll('.stat-value').forEach(el => {
+                el.textContent = '0';
+            });
+            showStatus('Proxy table cleared', 'info');
+        }
+
+        // Run proxy checker with real-time logging
+        function runChecker(noCache = false) {
+            if (isRunning) {
+                showStatus('Proxy checker is already running', 'warning');
+                return;
+            }
+
+            const refreshBtn = document.getElementById('refreshBtn');
+            const noCacheBtn = document.getElementById('noCacheBtn');
+            refreshBtn.disabled = true;
+            noCacheBtn.disabled = true;
+            
+            if (noCache) {
+                noCacheBtn.innerHTML = '<svg class="spinner" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg><span>Running...</span>';
+            } else {
+                refreshBtn.innerHTML = '<svg class="spinner" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg><span>Running...</span>';
+            }
+            
+            isRunning = true;
+            updateLogStatus('running', noCache ? 'Running (No Cache)...' : 'Running...');
+            
+            // Clear previous logs
+            const logContainer = document.getElementById('logContainer');
+            logContainer.innerHTML = '';
+            addLogEntry(noCache ? 'Starting proxy scraper (clearing cached databases)...' : 'Starting proxy scraper and checker...', 'info');
+            
+            // Close any existing connection
+            if (eventSource) {
+                eventSource.close();
+            }
+            
+            // Connect to SSE endpoint
+            const url = noCache ? '/run-stream?noCache=true' : '/run-stream';
+            eventSource = new EventSource(url);
+            
+            eventSource.onmessage = function(event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    
+                    switch (data.type) {
+                        case 'status':
+                            addLogEntry(data.message, 'info');
+                            break;
+                        case 'log':
+                            addLogEntry(data.message, 'log');
+                            break;
+                        case 'info':
+                            addLogEntry(data.message, 'info');
+                            break;
+                        case 'warning':
+                            addLogEntry(data.message, 'warning');
+                            break;
+                        case 'error':
+                            addLogEntry(data.message, 'error');
+                            break;
+                        case 'complete':
+                            addLogEntry(data.message, data.success ? 'success' : 'error');
+                            if (data.stats) {
+                                addLogEntry(`Found ${data.totalProxies} working proxies`, 'success');
+                                addLogEntry(`HTTP: ${data.stats.http}, SOCKS4: ${data.stats.socks4}, SOCKS5: ${data.stats.socks5}`, 'info');
+                                // Update stats UI in real-time
+                                updateStatsUI(data.stats, data.totalProxies);
+                            }
+                            updateLogStatus(data.success ? 'completed' : 'error', data.success ? 'Completed' : 'Failed');
+                            finishRun(data.success);
+                            break;
+                    }
+                } catch (e) {
+                    // If not JSON, just add as plain text
+                    addLogEntry(event.data, 'log');
+                }
+            };
+            
+            eventSource.onerror = function(err) {
+                console.error('EventSource error:', err);
+                addLogEntry('Connection to server lost', 'error');
+                updateLogStatus('error', 'Disconnected');
+                finishRun(false);
+            };
+        }
+
+        // Update statistics UI
+        function updateStatsUI(stats, totalProxies) {
+            const totalEl = document.getElementById('statTotal');
+            const workingEl = document.getElementById('statWorking');
+            const httpEl = document.getElementById('statHttp');
+            const socks4El = document.getElementById('statSocks4');
+            const socks5El = document.getElementById('statSocks5');
+            
+            if (totalEl) totalEl.textContent = stats.total || totalProxies || 0;
+            if (workingEl) workingEl.textContent = stats.working || totalProxies || 0;
+            if (httpEl) httpEl.textContent = stats.http || 0;
+            if (socks4El) socks4El.textContent = stats.socks4 || 0;
+            if (socks5El) socks5El.textContent = stats.socks5 || 0;
+            
+            // Add animation to highlight the change
+            [totalEl, workingEl, httpEl, socks4El, socks5El].forEach(el => {
+                if (el) {
+                    el.classList.add('stat-updated');
+                    setTimeout(() => el.classList.remove('stat-updated'), 500);
+                }
+            });
+        }
+
+        // Finish run and reset UI
+        function finishRun(success) {
+            isRunning = false;
+            
+            if (eventSource) {
+                eventSource.close();
+                eventSource = null;
+            }
+            
+            const refreshBtn = document.getElementById('refreshBtn');
+            const noCacheBtn = document.getElementById('noCacheBtn');
+            refreshBtn.disabled = false;
+            noCacheBtn.disabled = false;
+            refreshBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg><span>Run Checker</span>';
+            noCacheBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"></path></svg><span>No Cache</span>';
+            
+            if (success) {
+                showStatus('Proxy check completed! Refreshing page...', 'success');
+                setTimeout(() => location.reload(), 2000);
+            }
+        }
+
+        // Stop running checker
+        function stopChecker() {
+            if (eventSource) {
+                eventSource.close();
+                eventSource = null;
+            }
+            isRunning = false;
+            updateLogStatus('', 'Stopped');
+            addLogEntry('Checker stopped by user', 'warning');
+            
+            const refreshBtn = document.getElementById('refreshBtn');
+            const noCacheBtn = document.getElementById('noCacheBtn');
+            refreshBtn.disabled = false;
+            noCacheBtn.disabled = false;
+            refreshBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg><span>Run Checker</span>';
+            noCacheBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"></path></svg><span>No Cache</span>';
+        }
+
+        // Format time for last updated
+        const timeEl = document.getElementById('lastUpdated');
+        if (timeEl) {
+            const date = new Date(timeEl.getAttribute('datetime'));
+            timeEl.textContent = date.toLocaleString();
+        }
+
+        // Hide scroll hint when user scrolls the table
+        const tableContainer = document.getElementById('tableContainer');
+        const scrollHint = document.getElementById('scrollHint');
+        if (tableContainer && scrollHint) {
+            tableContainer.addEventListener('scroll', function() {
+                if (this.scrollLeft > 10) {
+                    scrollHint.classList.add('hidden');
+                }
+            }, { passive: true });
+            
+            // Also hide on touch start for mobile
+            tableContainer.addEventListener('touchstart', function() {
+                setTimeout(() => scrollHint.classList.add('hidden'), 1000);
+            }, { passive: true, once: true });
+        }
+    </script>
+</body>
+</html>
