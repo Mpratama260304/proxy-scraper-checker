@@ -619,6 +619,63 @@ app.get('/api/proxies', (req, res) => {
 });
 
 /**
+ * POST /clear-proxies - Clear all proxy result files
+ */
+app.post('/clear-proxies', (req, res) => {
+    console.log('[INFO] Clearing proxy files...');
+    
+    const filesToClear = [
+        path.join(OUTPUT_DIR, 'proxies.json'),
+        path.join(OUTPUT_DIR, 'proxies', 'all.txt'),
+        path.join(OUTPUT_DIR, 'proxies', 'http.txt'),
+        path.join(OUTPUT_DIR, 'proxies', 'socks4.txt'),
+        path.join(OUTPUT_DIR, 'proxies', 'socks5.txt')
+    ];
+    
+    const errors = [];
+    let clearedCount = 0;
+    
+    filesToClear.forEach(filePath => {
+        try {
+            if (fs.existsSync(filePath)) {
+                fs.unlinkSync(filePath);
+                clearedCount++;
+                console.log(`[CLEAR] Deleted: ${filePath}`);
+            }
+        } catch (err) {
+            errors.push(`Failed to delete ${path.basename(filePath)}: ${err.message}`);
+            console.error(`[ERROR] Failed to delete ${filePath}: ${err.message}`);
+        }
+    });
+    
+    if (errors.length === 0) {
+        res.json({ 
+            success: true, 
+            message: `Cleared ${clearedCount} proxy files`,
+            clearedCount 
+        });
+    } else {
+        res.json({ 
+            success: clearedCount > 0, 
+            message: `Cleared ${clearedCount} files with ${errors.length} errors`,
+            clearedCount,
+            errors 
+        });
+    }
+});
+
+/**
+ * GET /clear-status - Check if proxies have been cleared (for session persistence)
+ */
+app.get('/clear-status', (req, res) => {
+    const hasProxies = hasResults();
+    res.json({
+        proxiesCleared: !hasProxies,
+        hasData: hasProxies
+    });
+});
+
+/**
  * Get last updated time of proxy results
  * @returns {string|null}
  */

@@ -387,25 +387,103 @@
             }
         }
 
-        // Clear logs
+        // Clear logs (frontend only - logs are transient)
         function clearLogs() {
             const logContainer = document.getElementById('logContainer');
             logContainer.innerHTML = '';
             addLogEntry('Logs cleared', 'info');
             updateLogStatus('', 'Ready');
+            
+            // Store in localStorage to persist across page refresh
+            localStorage.setItem('logsCleared', 'true');
+            localStorage.setItem('logsClearedTime', new Date().toISOString());
         }
 
-        // Clear proxy table
-        function clearProxies() {
+        // Clear proxy table and backend data
+        async function clearProxies() {
             const tableBody = document.getElementById('proxyTableBody');
-            if (tableBody) {
-                tableBody.innerHTML = '';
+            const scrollHint = document.getElementById('scrollHint');
+            
+            // Show loading state
+            showStatus('Clearing proxy data...', 'info');
+            
+            try {
+                // Call backend to delete proxy files
+                const response = await fetch('/clear-proxies', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Clear frontend table
+                    if (tableBody) {
+                        tableBody.innerHTML = '';
+                    }
+                    
+                    // Hide scroll hint
+                    if (scrollHint) {
+                        scrollHint.classList.add('hidden');
+                    }
+                    
+                    // Update stats to zero
+                    updateStatsUI({ total: 0, working: 0, http: 0, socks4: 0, socks5: 0 }, 0);
+                    
+                    // Store cleared status in localStorage
+                    localStorage.setItem('proxiesCleared', 'true');
+                    localStorage.setItem('proxiesClearedTime', new Date().toISOString());
+                    
+                    showStatus(`${result.message}`, 'success');
+                    addLogEntry(`Proxy data cleared: ${result.message}`, 'success');
+                } else {
+                    showStatus(`Failed to clear proxies: ${result.message}`, 'error');
+                    addLogEntry(`Failed to clear proxies: ${result.message}`, 'error');
+                }
+            } catch (err) {
+                console.error('Error clearing proxies:', err);
+                showStatus('Failed to clear proxy data', 'error');
+                addLogEntry(`Error: ${err.message}`, 'error');
             }
-            // Update stats to zero
-            document.querySelectorAll('.stat-value').forEach(el => {
-                el.textContent = '0';
-            });
-            showStatus('Proxy table cleared', 'info');
+        }
+
+        // Check and apply persisted clear state on page load
+        function checkClearedState() {
+            // Check if logs were cleared in this session
+            const logsCleared = localStorage.getItem('logsCleared');
+            if (logsCleared === 'true') {
+                const logContainer = document.getElementById('logContainer');
+                // Don't clear logs automatically, just note that they were cleared
+                // User can see fresh logs on new checker runs
+            }
+            
+            // Check if proxies were cleared
+            const proxiesCleared = localStorage.getItem('proxiesCleared');
+            const proxiesClearedTime = localStorage.getItem('proxiesClearedTime');
+            
+            if (proxiesCleared === 'true' && proxiesClearedTime) {
+                // Check if proxy files exist (they might have been regenerated)
+                fetch('/clear-status')
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.hasData) {
+                            // New data exists, clear the localStorage flag
+                            localStorage.removeItem('proxiesCleared');
+                            localStorage.removeItem('proxiesClearedTime');
+                        }
+                    })
+                    .catch(err => console.error('Error checking clear status:', err));
+            }
+        }
+
+        // Reset cleared state when running checker (new data will be generated)
+        function resetClearedState() {
+            localStorage.removeItem('proxiesCleared');
+            localStorage.removeItem('proxiesClearedTime');
+            localStorage.removeItem('logsCleared');
+            localStorage.removeItem('logsClearedTime');
         }
 
         // Run proxy checker with real-time logging
@@ -414,6 +492,9 @@
                 showStatus('Proxy checker is already running', 'warning');
                 return;
             }
+
+            // Reset cleared state since new data will be generated
+            resetClearedState();
 
             const refreshBtn = document.getElementById('refreshBtn');
             const noCacheBtn = document.getElementById('noCacheBtn');
@@ -574,6 +655,9 @@
                 setTimeout(() => scrollHint.classList.add('hidden'), 1000);
             }, { passive: true, once: true });
         }
+
+        // Check cleared state on page load
+        checkClearedState();
     </script>
 </body>
 </html>
